@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using FunSuper.Server.Models;
+using System.Data;
 
 namespace FunSuper.Server.Services
 {

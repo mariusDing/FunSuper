@@ -1,4 +1,5 @@
 using FunSuper.Server.Services;
+using FunSuper.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FunSuper.Server.Controllers
@@ -19,14 +20,18 @@ namespace FunSuper.Server.Controllers
         /// Ingest data from spreadsheet
         /// </summary>
         [HttpPost("import")]
-        public async Task<ActionResult> ImportFile([FromForm] IFormFile file)
+        public async Task<FileImportResult> ImportFile([FromForm] IFormFile file)
         {
-            // Read spreadsheet
+            // Read data from spreadsheet
             var dataSet = await _fileService.ReadSpreadSheetAsync(file.OpenReadStream());
 
-            await _contextSeedService.SeedSuperContext(dataSet);
+            // Import data to context
+            var result = await _contextSeedService.SeedSuperContext(dataSet);
 
-            return new OkResult();
+            return new FileImportResult
+            {
+                EmployeeIds = result.EmployeeIds
+            };
         }
     }
 }

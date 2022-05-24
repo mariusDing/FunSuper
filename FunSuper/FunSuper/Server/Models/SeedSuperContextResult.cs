@@ -2,5 +2,6 @@
 {
     public class SeedSuperContextResult
     {
+        public List<int> EmployeeIds { get; set; }
     }
 }
