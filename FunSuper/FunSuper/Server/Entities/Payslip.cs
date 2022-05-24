@@ -7,7 +7,7 @@ namespace FunSuper.Server.Entities
         public int PayslipId { get; set;}
         public string PayslipCode { get; set; }
         public DateTime EndDate { get; set; }
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
 
         public int EmployeeId { get; set; }
         public Employee Employee { get; set; }

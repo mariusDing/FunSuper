@@ -15,10 +15,19 @@ namespace FunSuper.Server.Controllers
             _superCalculationService = superCalculationService;
         }
 
-        [HttpGet("{employeeId:int}/quarterly-total-super")]
-        public async Task GetQuarterlySuper([FromRoute]int employeeId)
+        [HttpGet("{employeeId:int}/year-quarter-total-super")]
+        public async Task<List<GetYearQuarterTotalSuperResult>> GetYearQuarterTotalSuper([FromRoute]int employeeId)
         {
-            await _superCalculationService.CalculateEmployeeTotalQuarterlySuper(employeeId);
+            var results = await _superCalculationService.CalculateEmployeeYearQuarterTotalSuper(employeeId);
+
+            return results.Select(r => new GetYearQuarterTotalSuperResult
+            {
+                Year = r.Year,
+                Quarter = r.Quarter,
+                TotalOte = r.TotalOte,
+                TotalSuperPayable = r.TotalSuperPayable,
+                TotalDisbursement = r.TotalDisbursement
+            }).ToList();
         }
     }
 }

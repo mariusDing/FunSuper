@@ -1,6 +1,8 @@
+using FunSuper.Server.Models;
+
 namespace FunSuper.Server.Services;
 
 public interface ISuperCalculationService
 {
-    Task CalculateEmployeeTotalQuarterlySuper(int employeeId);
+    Task<List<YearQuarterTotalSuperResult>> CalculateEmployeeYearQuarterTotalSuper(int employeeId);
 }

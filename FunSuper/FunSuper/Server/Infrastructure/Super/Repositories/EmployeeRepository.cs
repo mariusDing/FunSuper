@@ -15,7 +15,7 @@ namespace FunSuper.Server.Infrastructure.Super.Repositories
         public async Task<Employee> GetByIdAsync(int id)
         {
             return await _dbSet.Include(e => e.Disbursements)
-                               .Include(e => e.Payslips)
+                               .Include(e => e.Payslips).ThenInclude(p => p.PayCode)
                                .SingleOrDefaultAsync(e => e.EmployeeID == id);
         }
 

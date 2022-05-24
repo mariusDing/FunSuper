@@ -13,6 +13,7 @@ namespace FunSuper.Server.Extensions
             services.AddSingleton<IFileService, FileService>();
 
             services.AddScoped<IContextSeedService, ContextSeedService>();
+            services.AddScoped<ISuperCalculationService, SuperCalculationService>();
 
             return services;
         }

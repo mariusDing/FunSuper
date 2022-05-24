@@ -1,8 +1,9 @@
 using FunSuper.Server.Infrastructure.Super.Repositories;
+using FunSuper.Server.Models;
 
 namespace FunSuper.Server.Services;
 
-public class SuperCalculationService
+public class SuperCalculationService : ISuperCalculationService
 {
     private readonly IEmployeeRepository _employeeRepository;
 
@@ -11,43 +12,46 @@ public class SuperCalculationService
         _employeeRepository = employeeRepository;
     }
 
-    public async Task CalculateEmployeeTotalQuarterlySuper(int employeeId)
+    public async Task<List<YearQuarterTotalSuperResult>> CalculateEmployeeYearQuarterTotalSuper(int employeeId)
     {
-        var yearlyQuarter = new Dictionary<int, List<double>>();
-
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
 
-        var groupByYear = employee.Payslips.Where(p => p.PayCode.IsOteTreament)
-                                                                  .GroupBy(p => p.EndDate.ToUniversalTime().Year);
+        // Calculate total Ote and Super
+        var results = employee.Payslips.Where(p => p.PayCode.IsOteTreament)
+                                      .GroupBy(p => new { p.EndDate.ToUniversalTime().Year, 
+                                                          Quarter = (p.EndDate.ToUniversalTime().Month + 2) / 3 },
+                                              (gk, gv) => new YearQuarterTotalSuperResult
+                                              {
+                                                Year = gk.Year,
+                                                Quarter = gk.Quarter,
+                                                TotalOte = gv.Sum(p => p.Amount),
+                                              }).ToList();
+        // Calculate disbursement
+        var disbursementResults = employee.Disbursements.GroupBy(p => new { p.PayMadeDate.ToUniversalTime().Year, 
+                                                                     Quarter = (p.PayMadeDate.ToUniversalTime().Month + 2) / 3 }, 
+                                                         (gk, gv) => new YearQuarterTotalSuperResult
+                                                         {
+                                                            Year = gk.Year,
+                                                            Quarter = gk.Quarter,
+                                                            TotalDisbursement = gv.Sum(d => d.SgcAmount),
+                                                         }).ToList();
 
-        var aasd = employee.Payslips.Where(p => p.PayCode.IsOteTreament)
-            .GroupBy(p => new {p.EndDate.ToUniversalTime().Year, Month = (p.EndDate.ToUniversalTime().Month - 1) / 3},
-                (k, g) =>new
-                {
-                    Y = k.Year,
-                    J = k.Month,
-                    tCharge = g.Sum(pg=> pg.Amount)
-                });
-        // SelectMany, GroupBy,Select
-        foreach (var yearGroup in groupByYear)
+        // Merge disbursement to result
+        disbursementResults.ForEach(d =>
         {
-            yearlyQuarter.Add(yearGroup.Key, new List<double>());
+            var matched = results.FirstOrDefault(r => r.Year == d.Year && r.Quarter == d.Quarter);
 
-            var groupByQuarterly = yearGroup.GroupBy(yg => (yg.EndDate.ToUniversalTime().Month - 1) / 3);
-
-            foreach (var quarterlyGroup in groupByQuarterly)
+            if (matched != null)
             {
-                var sum = quarterlyGroup.Sum(p => p.Amount) * 0.095;
-
-                yearlyQuarter[yearGroup.Key].Add(sum);
+                matched.TotalDisbursement = d.TotalDisbursement;
+            } else
+            {
+                results.Add(d);
             }
-        }
-        //
-        // var aaaa = new Dictionary<int, Dictionary<int, double>>();
-        // var asdds = new List<(int, List<(int, double)>)>();
-        // // <2017, <1, 29>
-        // // <2017, <2, 30>
-        // // <2019, <3,32>
-        // // <2017, [123,423,423,123]>
+        });
+
+        return results;
     }
+
+
 }

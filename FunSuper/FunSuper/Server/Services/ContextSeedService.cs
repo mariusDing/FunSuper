@@ -63,7 +63,7 @@ namespace FunSuper.Server.Services
                 return new Disbursement
                 {
                     DisbursementId = ++i,
-                    SgcAmount = Convert.ToDouble(s[SuperSheet.Disbursements.SgcHeader]),
+                    SgcAmount = Convert.ToDecimal(s[SuperSheet.Disbursements.SgcHeader]),
                     PayFromDate = DateTime.Parse(s[SuperSheet.Disbursements.PayPeriodFromHeader].ToString(), styles: DateTimeStyles.AssumeUniversal),
                     PayToDate = DateTime.Parse(s[SuperSheet.Disbursements.PayPerodToHeader].ToString(), styles: DateTimeStyles.AssumeUniversal),
                     PayMadeDate = DateTime.Parse(s[SuperSheet.Disbursements.PaymentMadeHeader].ToString(), styles: DateTimeStyles.AssumeUniversal),
@@ -92,7 +92,7 @@ namespace FunSuper.Server.Services
             var payslips = dataTable.AsEnumerable().Select((s, i) => new Payslip
             {
                 PayslipId = ++i,
-                Amount = Convert.ToDouble(s[SuperSheet.Payslips.AmountHeader]),
+                Amount = Convert.ToDecimal(s[SuperSheet.Payslips.AmountHeader]),
                 EndDate = DateTime.Parse(s[SuperSheet.Payslips.EndHeader].ToString(), styles: DateTimeStyles.AssumeUniversal),
                 PayslipCode = s[SuperSheet.Payslips.PayslipIdHeader].ToString(),
                 PayCodeId = s[SuperSheet.Payslips.CodeHeader].ToString(),
