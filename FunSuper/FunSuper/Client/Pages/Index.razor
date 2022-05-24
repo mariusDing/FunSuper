@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using System.Net.Http
+@inject HttpClient Http
 
 <PageTitle>Super</PageTitle>
 
@@ -35,6 +37,7 @@
 
     // Model
     IEnumerable<int> employeeIds;
+    IEnumerable<GetYearQuarterTotalSuperResult> results;
 
     int selectEmployeeId;
 
@@ -54,7 +57,8 @@
         showEmployeeList = false;
     }
 
-    void OnEmployeeListChange(object value)
+    async Task OnEmployeeListChange(object value)
     {
+        results = await Http.GetFromJsonAsync<List<GetYearQuarterTotalSuperResult>>($"/employee/{value}/year-quarter-total-super");
     }
 }

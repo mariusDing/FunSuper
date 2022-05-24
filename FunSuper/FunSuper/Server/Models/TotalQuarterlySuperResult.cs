@@ -2,7 +2,7 @@
 
 namespace FunSuper.Server.Models
 {
-    public class TotalQuarterlySuperResult
+    public class YearQuarterTotalSuperResult
     {
         public int Year { get; set; }
         public int Quarter { get; set; }

@@ -17,7 +17,7 @@ namespace FunSuper.Server.Controllers
         }
 
         /// <summary>
-        /// Ingest data from spreadsheet
+        /// Ingest data from spreadsheet to Db
         /// </summary>
         [HttpPost("import")]
         public async Task<FileImportResult> ImportFile([FromForm] IFormFile file)
