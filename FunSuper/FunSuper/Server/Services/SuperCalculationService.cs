@@ -12,7 +12,7 @@ public class SuperCalculationService : ISuperCalculationService
         _employeeRepository = employeeRepository;
     }
 
-    public async Task<List<YearQuarterTotalSuperResult>> CalculateEmployeeYearQuarterTotalSuper(int employeeId)
+    public async Task<IEnumerable<YearQuarterTotalSuperResult>> CalculateEmployeeYearQuarterTotalSuper(int employeeId)
     {
         var employee = await _employeeRepository.GetByIdAsync(employeeId);
 

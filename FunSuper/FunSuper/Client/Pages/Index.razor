@@ -5,6 +5,19 @@
 <PageTitle>Super</PageTitle>
 
 <div>
+     @*<div>
+        <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" 
+         PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@employees" TItem="Employee" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+            <Columns>
+                <RadzenDataGridColumn TItem="Employee" Property="EmployeeID" Filterable="false" Title="2017" Frozen="true" Width="70px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="Employee" Property="FirstName" Title="OTE" Frozen="true" Width="140px" />
+                <RadzenDataGridColumn TItem="Employee" Property="LastName" Title="Super Payable" Width="140px"/>
+                <RadzenDataGridColumn TItem="Employee" Property="Title" Title="Disbursed" Width="200px" />
+                <RadzenDataGridColumn TItem="Employee" Property="TitleOfCourtesy" Title="Variance" Width="100px" />
+            </Columns>
+        </RadzenDataGrid>
+     </div>*@
+
      <div class="col-md-6 p-6" hidden="@hideUpload">
         <RadzenCard>
             <h4 class="mb-4">Import Your Super Spreadsheet</h4>
@@ -21,6 +34,15 @@
             </div>
         </RadzenCard>
     </div>
+
+    <div class="col-md-12 p-3" hidden="@showSuperSummary">
+        <RadzenCard>
+            <div>
+                <h4>@selectEmployeeId</h4>
+                <RadzenListBox @bind-Value=@selectEmployeeId Multiple=false Data=@employeeIds Change="@OnEmployeeListChange" class="w-50" />
+            </div>
+        </RadzenCard>
+    </div>
 </div>
 
 
@@ -33,13 +55,15 @@
 
     private bool showEmployeeList = true;
 
+    private bool showSuperSummary = true;
+
     private bool showUpload = true;
 
     // Model
-    IEnumerable<int> employeeIds;
-    IEnumerable<GetYearQuarterTotalSuperResult> results;
+    string selectEmployeeId;
 
-    int selectEmployeeId;
+    IEnumerable<string> employeeIds;
+    IEnumerable<YearlySuperSummary> yearlySummary;
 
     // Event
     void TrackProgress(UploadProgressArgs args)
@@ -50,7 +74,9 @@
 
     void OnUploadComplete(UploadCompleteEventArgs args)
     {
-        employeeIds = args.JsonResponse.Deserialize<FileImportResult>(new JsonSerializerOptions {PropertyNameCaseInsensitive = true}).EmployeeIds;
+        var result = args.JsonResponse.Deserialize<FileImportResult>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        employeeIds = result.EmployeeIds.Select(e => e.ToString()).ToList(); // ListBox only works properly with string 
 
         hideUpload = true;
 
@@ -59,6 +85,79 @@
 
     async Task OnEmployeeListChange(object value)
     {
-        results = await Http.GetFromJsonAsync<List<GetYearQuarterTotalSuperResult>>($"/employee/{value}/year-quarter-total-super");
+        var result = await Http.GetFromJsonAsync<List<GetYearQuarterTotalSuperResult>>($"/employee/{value}/year-quarter-total-super");
+
+        yearlySummary = ConvertSuperResultToSuperSummary(result);
+    }
+
+    IEnumerable<YearlySuperSummary> ConvertSuperResultToSuperSummary(List<GetYearQuarterTotalSuperResult> results)
+    {
+        var summarys = new List<YearlySuperSummary>();
+
+        results.ForEach(r =>
+        {
+            var yearSummaryIndex = summarys.FindIndex(s => s.Year == r.Year);
+
+            if (yearSummaryIndex != -1)
+            {
+                summarys[yearSummaryIndex].QuarterlySuperSummarys.Add(new QuarterlySuperSummary
+                {
+                    Quarter = r.Quarter,
+                    TotalOte = r.TotalOte,
+                    TotalDisbursement = r.TotalDisbursement,
+                    TotalSuperPayable = r.TotalSuperPayable
+                });
+            }
+            else
+            {
+                summarys.Add(new YearlySuperSummary
+                {
+                    Year = r.Year,
+                    QuarterlySuperSummarys = new List<QuarterlySuperSummary>()
+                {
+                    new QuarterlySuperSummary
+                    {
+                        Quarter = r.Quarter,
+                        TotalOte = r.TotalOte,
+                        TotalDisbursement = r.TotalDisbursement,
+                        TotalSuperPayable = r.TotalSuperPayable
+                    }
+                }
+                });
+            }
+        });
+
+        // Refill missing quarter
+        summarys.ForEach(s =>
+        {
+            for (var i = 1; i < 5; i++)
+            {
+                if (!s.QuarterlySuperSummarys.Any(q => q.Quarter == i))
+                {
+                    s.QuarterlySuperSummarys.Add(new QuarterlySuperSummary
+                    {
+                        Quarter = i
+                    });
+                }
+            }
+            s.QuarterlySuperSummarys = s.QuarterlySuperSummarys.OrderBy(q => q.Quarter).ToList();
+        });
+
+        return summarys.OrderBy(s => s.Year);
+    }
+
+    // Class
+    public class YearlySuperSummary
+    {
+        public int Year;
+        public List<QuarterlySuperSummary> QuarterlySuperSummarys;
+    }
+
+    public class QuarterlySuperSummary
+    {
+        public int Quarter;
+        public decimal TotalOte { get; set; }
+        public decimal TotalSuperPayable { get; set; }
+        public decimal TotalDisbursement { get; set; }
     }
 }
