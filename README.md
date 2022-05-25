@@ -6,9 +6,7 @@ Tech Stacks: Blazor, ASP.NET WEB API, SQLite (In-memory)
 
 ## Preview
 
-**Import data**
-
-**Display calculated super**
+https://user-images.githubusercontent.com/11885340/170183832-ebf81411-a4af-4ab7-926c-5b7b8eb07dac.mp4
 
 ## Prerequisites
 
@@ -16,7 +14,7 @@ Tech Stacks: Blazor, ASP.NET WEB API, SQLite (In-memory)
 
 ## Solution Structure
 
-    |- /FunSuper.Client          # Blazor Wasm Client
+    |- /FunSuper.Client         # Blazor Wasm Client
     |- /FunSuper.Server         # Web API Project
 
 ## Getting Started
