@@ -1,6 +1,8 @@
 # FunSuper
 
-Blazor Wasm (WebassemblyBlazor) App for calculating quarterly total super by importing data
+Blazor Wasm (WebassemblyBlazor) App for calculating quarterly total super by importing data.
+
+Tech Stacks: Blazor, ASP.NET WEB API, SQLite (In-memory)
 
 ## Preview
 
