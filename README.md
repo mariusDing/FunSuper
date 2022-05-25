@@ -6,7 +6,7 @@ Tech Stacks: Blazor, ASP.NET WEB API, SQLite (In-memory)
 
 ## Preview
 
-https://user-images.githubusercontent.com/11885340/170183832-ebf81411-a4af-4ab7-926c-5b7b8eb07dac.mp4
+https://user-images.githubusercontent.com/11885340/170184249-4e72d85d-554b-4c18-a1ff-eba8f9e648e0.mp4
 
 ## Prerequisites
 
