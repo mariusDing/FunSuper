@@ -1,23 +1,11 @@
 ﻿@page "/"
 @using System.Net.Http
+@using System.Globalization
 @inject HttpClient Http
 
 <PageTitle>Super</PageTitle>
 
 <div>
-     @*<div>
-        <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" 
-         PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@employees" TItem="Employee" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
-            <Columns>
-                <RadzenDataGridColumn TItem="Employee" Property="EmployeeID" Filterable="false" Title="2017" Frozen="true" Width="70px" TextAlign="TextAlign.Center" />
-                <RadzenDataGridColumn TItem="Employee" Property="FirstName" Title="OTE" Frozen="true" Width="140px" />
-                <RadzenDataGridColumn TItem="Employee" Property="LastName" Title="Super Payable" Width="140px"/>
-                <RadzenDataGridColumn TItem="Employee" Property="Title" Title="Disbursed" Width="200px" />
-                <RadzenDataGridColumn TItem="Employee" Property="TitleOfCourtesy" Title="Variance" Width="100px" />
-            </Columns>
-        </RadzenDataGrid>
-     </div>*@
-
      <div class="col-md-6 p-6" hidden="@hideUpload">
         <RadzenCard>
             <h4 class="mb-4">Import Your Super Spreadsheet</h4>
@@ -37,10 +25,41 @@
 
     <div class="col-md-12 p-3" hidden="@showSuperSummary">
         <RadzenCard>
+        @foreach (var ys in yearlySummary)
+        {
             <div>
-                <h4>@selectEmployeeId</h4>
-                <RadzenListBox @bind-Value=@selectEmployeeId Multiple=false Data=@employeeIds Change="@OnEmployeeListChange" class="w-50" />
+                <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" 
+                 PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" Data="@ys.QuarterlySuperSummarys" TItem="QuarterlySuperSummary" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="QuarterlySuperSummary"  Title="@ys.Year.ToString()" Frozen="true" Width="70px" TextAlign="TextAlign.Center">
+                            <Template Context="qs">
+                                Q@(qs.Quarter)
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="QuarterlySuperSummary" Property="TotalOte" Title="Total OTE" Frozen="true" Width="140px" TextAlign="TextAlign.Center">
+                            <Template Context="qs">
+                                $@(qs.TotalOte)
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="QuarterlySuperSummary" Property="TotalSuperPayable" Title="Total Super Payable" Width="140px" TextAlign="TextAlign.Center">
+                             <Template Context="qs">
+                                $@(qs.TotalSuperPayable)
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="QuarterlySuperSummary" Property="TotalDisbursement" Title="Total Disbursed" Width="200px" TextAlign="TextAlign.Center">
+                              <Template Context="qs">
+                                $@(qs.TotalDisbursement)
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+
+                <br>
             </div>
+        }
         </RadzenCard>
     </div>
 </div>
@@ -63,7 +82,7 @@
     string selectEmployeeId;
 
     IEnumerable<string> employeeIds;
-    IEnumerable<YearlySuperSummary> yearlySummary;
+    public List<YearlySuperSummary> yearlySummary = new List<YearlySuperSummary>();
 
     // Event
     void TrackProgress(UploadProgressArgs args)
@@ -87,7 +106,10 @@
     {
         var result = await Http.GetFromJsonAsync<List<GetYearQuarterTotalSuperResult>>($"/employee/{value}/year-quarter-total-super");
 
-        yearlySummary = ConvertSuperResultToSuperSummary(result);
+        yearlySummary = ConvertSuperResultToSuperSummary(result).ToList();
+
+        showSuperSummary = false;
+        //await InvokeAsync(StateHasChanged);
     }
 
     IEnumerable<YearlySuperSummary> ConvertSuperResultToSuperSummary(List<GetYearQuarterTotalSuperResult> results)
@@ -136,7 +158,10 @@
                 {
                     s.QuarterlySuperSummarys.Add(new QuarterlySuperSummary
                     {
-                        Quarter = i
+                        Quarter = i,
+                        TotalDisbursement = 0.00m,
+                        TotalOte = 0.00m,
+                        TotalSuperPayable = 0.00m,
                     });
                 }
             }
@@ -155,7 +180,7 @@
 
     public class QuarterlySuperSummary
     {
-        public int Quarter;
+        public int Quarter { get; set; }
         public decimal TotalOte { get; set; }
         public decimal TotalSuperPayable { get; set; }
         public decimal TotalDisbursement { get; set; }
