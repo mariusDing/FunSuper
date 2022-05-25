@@ -16,7 +16,7 @@ Tech Stacks: Blazor, ASP.NET WEB API, SQLite (In-memory)
 
 ## Solution Structure
 
-    |- /FunSuper.Client          # Blazor Wasm Client
+    |- /FunSuper.Client         # Blazor Wasm Client
     |- /FunSuper.Server         # Web API Project
 
 ## Getting Started
